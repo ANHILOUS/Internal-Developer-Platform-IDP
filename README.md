@@ -1,4 +1,4 @@
-<img width="1254" height="1254" alt="ChatGPT Image Apr 27, 2026, 11_33_31 PM" src="https://github.com/user-attachments/assets/b65a49a1-9c1b-4818-837a-09715233d988" /># Internal Developer Platform (IDP) - Platform Engineering Catalyst
+Internal Developer Platform (IDP) - Platform Engineering Catalyst
 
 ## 🚧 Status: In Active Development 🚧
 
