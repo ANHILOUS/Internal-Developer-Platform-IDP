@@ -20,14 +20,18 @@ jobs:
           # Extracts the Language and DB Size you picked in the Port UI
           echo "LANG=$(echo $PAYLOAD | jq -r '.payload.properties.language')" >> $GITHUB_ENV
           echo "DB_SIZE=$(echo $PAYLOAD | jq -r '.payload.properties.database_size')" >> $GITHUB_ENV
+          echo "NEW_REPO=$(echo $PAYLOAD | jq -r '.payload.properties.repository_url')" >> $GITHUB_ENV
           echo "PORT_RUN_ID=$(echo $PAYLOAD | jq -r '.context.runId')" >> $GITHUB_ENV
 
-      - name: Execution Logic
+      - name: Execution Logic Simulation
         run: |
-          echo "Port triggered a new service scaffold!"
+          echo "-------------------------------------------------------"
+          echo "IDP ENGINE STARTING..."
+          echo "Target Repo: ${{ env.NEW_REPO }}"
           echo "Selected Language: ${{ env.LANG }}"
-          echo "Selected Database Size: ${{ env.DB_SIZE }}"
-          echo "In the next step, we will add the scripts to actually push code to GitHub."
+          echo "Provisioning AWS RDS: ${{ env.DB_SIZE }}"
+          echo "-------------------------------------------------------"
+          echo "Status: Running logic in ANHILOUS/Internal-Developer-Platform-IDP"
 
       - name: Report Success Back to Port
         uses: port-labs/port-github-action@v1
@@ -36,4 +40,4 @@ jobs:
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           operation: PATCH_RUN
           runId: ${{ env.PORT_RUN_ID }}
-          logMessage: "Scaffold workflow started successfully in GitHub Actions! ✅"
+          logMessage: "Successfully triggered scaffold from ANHILOUS's IDP! 🚀"
