@@ -1,0 +1,39 @@
+name: Scaffold Microservice from Port
+
+on:
+  workflow_dispatch:
+    inputs:
+      port_payload:
+        required: true
+        description: "Port's payload, including action inputs"
+        type: string
+
+jobs:
+  scaffold-and-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Port Payload
+        id: port_vars
+        run: |
+          PAYLOAD='${{ github.event.inputs.port_payload }}'
+          
+          # Extracts the Language and DB Size you picked in the Port UI
+          echo "LANG=$(echo $PAYLOAD | jq -r '.payload.properties.language')" >> $GITHUB_ENV
+          echo "DB_SIZE=$(echo $PAYLOAD | jq -r '.payload.properties.database_size')" >> $GITHUB_ENV
+          echo "PORT_RUN_ID=$(echo $PAYLOAD | jq -r '.context.runId')" >> $GITHUB_ENV
+
+      - name: Execution Logic
+        run: |
+          echo "Port triggered a new service scaffold!"
+          echo "Selected Language: ${{ env.LANG }}"
+          echo "Selected Database Size: ${{ env.DB_SIZE }}"
+          echo "In the next step, we will add the scripts to actually push code to GitHub."
+
+      - name: Report Success Back to Port
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          operation: PATCH_RUN
+          runId: ${{ env.PORT_RUN_ID }}
+          logMessage: "Scaffold workflow started successfully in GitHub Actions! ✅"
