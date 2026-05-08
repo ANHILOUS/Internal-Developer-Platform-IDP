@@ -4,44 +4,28 @@ on:
   workflow_dispatch:
     inputs:
       port_payload:
-        required: false
-        type: string
-      repo_name:
-        required: false
-        type: string
-      language:
-        required: false
-        type: string
-      database_size:
-        required: false
-        type: string
-      run_id:
-        required: false
+        required: true
+        description: "Port's payload"
         type: string
 
 jobs:
   scaffold-and-create:
     runs-on: ubuntu-latest
     steps:
-      - name: Receive Direct Inputs
+      - name: Parse Port Payload
+        id: port_vars
         run: |
-          echo "REPO_NAME=${{ github.event.inputs.repo_name }}" >> $GITHUB_ENV
-          echo "LANG=${{ github.event.inputs.language }}" >> $GITHUB_ENV
-          echo "DB_SIZE=${{ github.event.inputs.database_size }}" >> $GITHUB_ENV
-          echo "PORT_RUN_ID=${{ github.event.inputs.run_id }}" >> $GITHUB_ENV
+          PAYLOAD='${{ github.event.inputs.port_payload }}'
+          echo "REPO_NAME=$(echo $PAYLOAD | jq -r '.payload.properties.repo_name')" >> $GITHUB_ENV
+          echo "PORT_RUN_ID=$(echo $PAYLOAD | jq -r '.context.runId')" >> $GITHUB_ENV
 
       - name: Create New Repository
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
         run: |
-          echo "### IDP Engine: Provisioning ${{ env.REPO_NAME }} ###"
-          
-          # Create a public repo on your account
-          gh repo create ANHILOUS/${{ env.REPO_NAME }} --public --description "Scaffolded via Port IDP" --add-readme
-          
-          echo "Success: https://github.com/ANHILOUS/${{ env.REPO_NAME }}"
+          gh repo create ANHILOUS/${{ env.REPO_NAME }} --public --add-readme
 
-      - name: Report Success Back to Port
+      - name: Report Success
         if: always()
         uses: port-labs/port-github-action@v1
         with:
@@ -49,4 +33,4 @@ jobs:
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           operation: PATCH_RUN
           runId: ${{ env.PORT_RUN_ID }}
-          logMessage: "Scaffolded ${{ env.REPO_NAME }} successfully! 🚀"
+          logMessage: "Successfully built ${{ env.REPO_NAME }}! 🚀"
