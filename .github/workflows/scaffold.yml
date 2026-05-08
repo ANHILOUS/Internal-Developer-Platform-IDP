@@ -4,9 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       port_payload:
-        required: true
+        required: false       # <--- WE CHANGED THIS
         description: "Port's payload, including action inputs"
         type: string
+        default: '{}'         # <--- WE ADDED THIS
 
 jobs:
   scaffold-and-create:
@@ -16,6 +17,8 @@ jobs:
         id: port_vars
         run: |
           PAYLOAD='${{ github.event.inputs.port_payload }}'
+          
+          # High-reliability extraction
           echo "REPO_NAME=$(echo $PAYLOAD | jq -r '.payload.properties.repo_name // .body.properties.repo_name')" >> $GITHUB_ENV
           echo "LANG=$(echo $PAYLOAD | jq -r '.payload.properties.language // .body.properties.language')" >> $GITHUB_ENV
           echo "DB_SIZE=$(echo $PAYLOAD | jq -r '.payload.properties.database_size // .body.properties.database_size')" >> $GITHUB_ENV
@@ -26,8 +29,11 @@ jobs:
           GH_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
         run: |
           echo "### IDP Engine: Provisioning ${{ env.REPO_NAME }} ###"
-          # This command uses the corrected variable REPO_NAME
+          
+          # Create a public repo on the ANHILOUS account
           gh repo create ANHILOUS/${{ env.REPO_NAME }} --public --description "Scaffolded via Port IDP" --add-readme
+          
+          echo "Success: https://github.com/ANHILOUS/${{ env.REPO_NAME }}"
 
       - name: Report Success to Port
         if: always()
@@ -37,4 +43,4 @@ jobs:
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           operation: PATCH_RUN
           runId: ${{ env.PORT_RUN_ID }}
-          logMessage: "Successfully scaffolded ${{ env.REPO_NAME }}! 🚀"
+          logMessage: "Scaffolded ${{ env.REPO_NAME }} successfully! 🚀"
